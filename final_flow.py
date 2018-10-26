@@ -60,13 +60,13 @@ def start_excel(path,file_name):
     ws.Cells(2, lastCol_new).Value=current_day
     ws.Cells(3, lastCol_new).Value=date_filed
 
-    '''
+    
     # Copy the values for the PAETEC Request sheet
     ws = wb.Worksheets("PAETEC Request")
     #This loop for PAETEC Request sheet
     row=1
     col=1
-    with open(path+'paetec_request_22thOct18.csv','r') as csv_file:
+    with open(path+'paetec_request_26thOct18.csv','r') as csv_file:
         c=csv.reader(csv_file)
         for i,val in enumerate(c):
             if i != 0:
@@ -81,7 +81,7 @@ def start_excel(path,file_name):
     ws = wb.Worksheets("PAETEC RIS")
     row=1
     col=1
-    with open(path+'paetec_ris_22thOct18.csv','r') as csv_file:
+    with open(path+'paetec_ris_26thOct18.csv','r') as csv_file:
         c=csv.reader(csv_file)
         for i,val in enumerate(c):
             if i != 0:
@@ -92,20 +92,29 @@ def start_excel(path,file_name):
                     col=col+1
             row=row+1
             col=1
-    '''
+    
     # Go to the calc sheet and update the path
     ws = wb.Worksheets("Calc")
     ws.Cells(5,2).Value = path
     #Now we have done all the neccesarry activity  so call the macro to populate the values in respective fields'
     excel.Application.Run("Macro6")
     time.sleep(1)
-    excel.Application.Run("macro_cal_save")
+    #excel.Application.Run("Macro_cal_save")
     ###############################
+    ws = wb.Worksheets("Calc")
     # verication of the metrics count with high level bench mark
     tc_received=ws.Cells(19,2).Value
+    print ('tc_received ',tc_received)
+    tc_resolved_total=ws.Cells(20,2).Value
+    print ('tc_resolved_total ',tc_resolved_total)
     tc_resolved_same_day=ws.Cells(21,2).Value
+    print ('tc_resolved_same_day ',tc_resolved_same_day)
     pae_tc_recieved=ws.Cells(27,2).Value
+    print ('pae_tc_recieved ',pae_tc_recieved)
+    pae_resolved=ws.Cells(28,2).Value
+    print ('pae_resolved ',pae_resolved)
     pae_tc_resolved_same_day=ws.Cells(29,2).Value
+    print (' pae_tc_resolved_same_day ',pae_tc_resolved_same_day)
     # To get the values from Metrics worksheet
     wc = wb.Worksheets("Metrics")
     metrics=wc.Cells(23,6).Value
@@ -114,7 +123,18 @@ def start_excel(path,file_name):
     metrics_pae=wc.Cells(13,6).Value#ws.Cells(23,lastCol+1).Value
     #lastCol = ws.UsedRange.Columns.Count
     #lastRow = ws.UsedRange.Rows.Count
+
+
     ws = wb.Worksheets("Highlevel Bench Mark")
+    #updating the Highlevel Bench Mark to calculate the hwin count
+    ws.Cells(4,lastCol_new-1).Value=tc_received
+    print ('tc_received is updated in Highlevel Bench Mark')
+    ws.Cells(5,lastCol_new-1).Value=tc_resolved_same_day
+    print ('tc_resolved_same_day is updated in Highlevel Bench Mark')
+    ws.Cells(6,lastCol_new-1).Value=tc_resolved_total-tc_resolved_same_day
+    print ('tc_resolved_total-tc_resolved_same_day is updated in Highlevel Bench Mark')
+    
+    
 
     #To get the values for hwin count
     a=ws.Cells(16,lastCol_new-1).Value
@@ -127,6 +147,13 @@ def start_excel(path,file_name):
     print ('ws.Cells(5,lastCol_new-1)',d)
     #BKR26+BKS22-BKS23-BKS24
     #Get the values for paetec_metrics
+    ws.Cells(22,lastCol_new).Value=pae_tc_recieved
+    print ()
+    ws.Cells(23,lastCol_new).Value=pae_tc_resolved_same_day
+    ws.Cells(24,lastCol_new).Value=pae_resolved-pae_tc_resolved_same_day
+    
+    
+    
     pa=ws.Cells(26,lastCol_new).Value
     pb=ws.Cells(22,lastCol_new).Value
     pc=ws.Cells(23,lastCol_new).Value
@@ -154,41 +181,86 @@ def start_excel(path,file_name):
                     diff=metrics - actual_hwin_val 
                     correct_c_value=c-diff
                     print (' correct_c_value ',correct_c_value)
+                    try:
+                        row=2
+                        for i in range(0,diff):
+                            print (i)
+                            ws.Cells(6,lastCol_new-row).Value=int(ws.Cells(6,lastCol_new-row).Value-1)
+                            print ( 'ws.Cells(6,lastCol_new-'+str(row)+' ',ws.Cells(6,lastCol_new-row).Value-1)
+                            row=row+1
+                    except Exception as e:
+                        print (e)
+                        print ('Got the error1')
             else:
                     diff=actual_hwin_val - metrics
                     correct_c_value=c+diff
-                    print (' correct_c_value ',correct_c_value)
+                    try:
+                        print (' Need to increase the c value so the correct_c_value ',diff)
+                        row=2
+                        print (row)
+                        print ('The difference is ',diff)
+                        for i in range(0,int(diff)):
+                            print (i)
+                            print 
+                            print(ws.Cells(6,lastCol_new-row).Value)
+                            ws.Cells(6,lastCol_new-row).Value=int(ws.Cells(6,lastCol_new-row).Value+1)
+                            print ( 'ws.Cells(6,lastCol_new-'+str(row)+' ',ws.Cells(6,lastCol_new-row).Value)
+                            row=row+1
+                    except Exception as e:
+                        print (e)
+                        print ('Got the Error 2')
     else:
-            correct_c_value=c
-            print (' correct_c_value ',correct_c_value)
-
-    #Updating the correct_a_value
-    try:
-            ws.Cells(6,lastCol_new-1).Value=correct_c_value
-    except Exception as e:
-            print (e)
+            #correct_c_value=c
+            #print (' correct_c_value ',correct_c_value)
+            #Updating the correct_a_value
+            #try:
+            #ws.Cells(6,lastCol_new-2).Value=correct_c_value
+            #except Exception as e:
+            #print (e)
+            pass
 
     #Checking the count for paetec
     if actual_hpae_val != metrics_pae:
             if actual_hpae_val < metrics_pae:
                     diff=metrics_pae - actual_hpae_val
                     correct_pd_value=pd-diff
-                    print ('correct_pd_value ',correct_pd_value)
+                    print ('correct_pd_value ',diff)
+                    try:
+                        row=1
+                        for i in range(0,correct_pd_value):
+                            print (i)
+                            ws.Cells(24,lastCol_new-row).Value=int(ws.Cells(24,lastCol_new-row).Value-1)
+                            print ( 'ws.Cells(24,lastCol_new-'+str(row)+' ',ws.Cells(24,lastCol_new-row).Value-1)
+                            row=row+1
+                    except Exception as e:
+                        print (e)
+                        print ('Got the error3')
             else:
                     diff=actual_hpae_val - metrics_pae
                     correct_pd_value=pd+diff
-                    print ('correct_pd_value ',correct_pd_value)
+                    print ('correct_pd_value ',diff)
+                    try:
+                        row=1
+                        for i in range(0,correct_pd_value):
+                            print (i)                     
+                            ws.Cells(24,lastCol_new-row).Value=int(ws.Cells(24,lastCol_new-row).Value+1)
+                            print ( 'ws.Cells(24,lastCol_new-'+str(row)+' ',ws.Cells(24,lastCol_new-row).Value+1)
+                            row=row+1
+                    except Exception as e:
+                        print (e)
+                        print ('Got the error4')
     else:
-            correct_pd_value=pd
-            print ('correct_pd_value ',correct_pd_value)
-    #Updating the correct_pa_value
-    try:
-            ws.Cells(24,lastCol_new).Value=correct_pd_value
-    except Exception as e:
-            print (e)
+            #correct_pd_value=pd
+            #print ('correct_pd_value ',correct_pd_value)
+            #Updating the correct_pa_value
+            #try:
+            #ws.Cells(24,lastCol_new-1).Value=correct_pd_value
+            #except Exception as e:
+            #print (e)
+            pass
     ################
     #To close the opened the file
-    excel.Application.Run("macro_save")
+    excel.Application.Run("Macro_save")
     wb.Close()
     excel.Quit()
 #start_excel(path,file_name)
